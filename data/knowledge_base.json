@@ -1,0 +1,602 @@
+[
+    {
+        "id": 1,
+        "category": "Router",
+        "issue_description": "Red status LED blinking continuously",
+        "solution_text": "Check the router logs to identify the specific error code associated with the LED pattern. Verify power stability and reboot the device after ensuring the firmware is up to date. If the issue persists, reseat the power module and inspect for hardware faults."
+    },
+    {
+        "id": 2,
+        "category": "Router",
+        "issue_description": "Intermittent packet loss on WAN interface",
+        "solution_text": "Inspect interface statistics for CRC or input errors. Replace the Ethernet cable and verify the duplex and speed settings match the ISP configuration. Apply the latest firmware patch if known bugs affect WAN stability."
+    },
+    {
+        "id": 3,
+        "category": "Router",
+        "issue_description": "Router not booting past POST",
+        "solution_text": "Connect via console to observe boot messages and identify failure points. Remove non-essential modules and attempt a minimal boot configuration. Reflash the firmware using recovery mode if corruption is suspected."
+    },
+    {
+        "id": 4,
+        "category": "Router",
+        "issue_description": "High CPU usage caused by routing process",
+        "solution_text": "Review routing tables and check for route flapping or misconfigured protocols. Disable unused routing services and optimize timers. Restart the routing daemon during a maintenance window if required."
+    },
+    {
+        "id": 5,
+        "category": "Router",
+        "issue_description": "VPN tunnels failing to establish",
+        "solution_text": "Verify encryption parameters and pre-shared keys on both tunnel endpoints. Ensure system time is synchronized via NTP to avoid certificate validation errors. Review firewall rules that may block VPN traffic."
+    },
+    {
+        "id": 6,
+        "category": "Server",
+        "issue_description": "Server does not power on",
+        "solution_text": "Check power supply LEDs and confirm the power cable is functional. Test with a redundant PSU if available. Inspect the motherboard for fault codes or beep patterns."
+    },
+    {
+        "id": 7,
+        "category": "Server",
+        "issue_description": "RAID controller reports degraded array",
+        "solution_text": "Identify the failed disk using the RAID management utility. Replace the faulty drive with a compatible model and allow the rebuild process to complete. Monitor system performance during rebuild to prevent additional failures."
+    },
+    {
+        "id": 8,
+        "category": "Server",
+        "issue_description": "BIOS not detecting installed memory",
+        "solution_text": "Power off the server and reseat all memory modules. Verify that DIMMs are installed in supported slots according to the vendor documentation. Update the BIOS if compatibility issues are known."
+    },
+    {
+        "id": 9,
+        "category": "Server",
+        "issue_description": "Unexpected server reboots",
+        "solution_text": "Check system event logs for thermal or power-related errors. Ensure firmware and drivers are current. Run hardware diagnostics to detect failing components."
+    },
+    {
+        "id": 10,
+        "category": "Server",
+        "issue_description": "Fan running at maximum speed constantly",
+        "solution_text": "Verify temperature sensor readings in the management interface. Clean dust from air intakes and heat sinks. Update firmware to resolve incorrect fan control behavior."
+    },
+    {
+        "id": 11,
+        "category": "Switch",
+        "issue_description": "Multiple ports showing link flapping",
+        "solution_text": "Check connected cables and replace any damaged ones. Ensure connected devices are not negotiating incompatible speeds or duplex settings. Upgrade switch firmware if instability is reported by the vendor."
+    },
+    {
+        "id": 12,
+        "category": "Switch",
+        "issue_description": "PoE devices not receiving power",
+        "solution_text": "Confirm that PoE is enabled on the affected ports. Check the total PoE power budget and disconnect unused devices if necessary. Reload the switch to reset PoE controllers."
+    },
+    {
+        "id": 13,
+        "category": "Switch",
+        "issue_description": "Switch management interface unreachable",
+        "solution_text": "Verify the management VLAN configuration and IP address settings. Test connectivity locally via console access. Restart the management service if the control plane is unresponsive."
+    },
+    {
+        "id": 14,
+        "category": "Switch",
+        "issue_description": "High latency across multiple VLANs",
+        "solution_text": "Inspect spanning tree status for topology changes or loops. Ensure uplink ports are not oversubscribed. Monitor CPU utilization to rule out control plane congestion."
+    },
+    {
+        "id": 15,
+        "category": "Switch",
+        "issue_description": "Switch fails to load configuration on boot",
+        "solution_text": "Check the startup configuration file for corruption. Load a backup configuration from flash or TFTP. Save the running configuration once the issue is resolved."
+    },
+    {
+        "id": 16,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit reports temperature alarm",
+        "solution_text": "Verify ambient temperature sensors for accuracy. Ensure air filters are clean and unobstructed. Increase cooling capacity or redistribute server load if necessary."
+    },
+    {
+        "id": 17,
+        "category": "Cooling System",
+        "issue_description": "Unusual vibration noise from cooling system",
+        "solution_text": "Inspect fan mounts and bearings for wear. Tighten any loose components and ensure the unit is level. Replace the fan assembly if mechanical damage is found."
+    },
+    {
+        "id": 18,
+        "category": "Cooling System",
+        "issue_description": "Cooling fan not spinning",
+        "solution_text": "Check power connections to the fan module. Attempt a system reset to reinitialize fan controllers. Replace the fan if it fails to respond after reset."
+    },
+    {
+        "id": 19,
+        "category": "Cooling System",
+        "issue_description": "Inconsistent airflow detected",
+        "solution_text": "Verify that all airflow paths are clear and blanking panels are installed correctly. Check for failed fans reducing pressure. Balance rack layout to improve airflow efficiency."
+    },
+    {
+        "id": 20,
+        "category": "Cooling System",
+        "issue_description": "Cooling controller communication failure",
+        "solution_text": "Inspect control cables and reseat connectors. Restart the cooling controller module. Update controller firmware to address known communication bugs."
+    },
+    {
+        "id": 21,
+        "category": "Router",
+        "issue_description": "Routing table not updating dynamically",
+        "solution_text": "Verify that the dynamic routing protocol is enabled and neighbors are in an established state. Check authentication settings and timers for mismatches. Restart the routing process if updates are stuck."
+    },
+    {
+        "id": 22,
+        "category": "Router",
+        "issue_description": "Interface stuck in down/down state",
+        "solution_text": "Check physical connectivity and replace the cable if necessary. Ensure the interface is not administratively disabled. Test the port by moving the connection to a known working interface."
+    },
+    {
+        "id": 23,
+        "category": "Router",
+        "issue_description": "NAT translations not being created",
+        "solution_text": "Confirm NAT rules are correctly defined and applied to the proper interfaces. Verify traffic matches the access control lists used by NAT. Clear existing translations and retest traffic flow."
+    },
+    {
+        "id": 24,
+        "category": "Router",
+        "issue_description": "Slow throughput on LAN interfaces",
+        "solution_text": "Check interface speed and duplex negotiation settings. Review QoS policies that may be rate-limiting traffic. Monitor CPU utilization to ensure the router is not overloaded."
+    },
+    {
+        "id": 25,
+        "category": "Router",
+        "issue_description": "Configuration changes not being saved",
+        "solution_text": "Ensure the configuration is written to non-volatile memory after changes. Check storage availability on the device. Verify user permissions allow configuration commits."
+    },
+    {
+        "id": 26,
+        "category": "Server",
+        "issue_description": "Operating system fails to load",
+        "solution_text": "Check boot order settings in BIOS or UEFI. Inspect system logs for disk or file system errors. Boot from recovery media to repair the operating system if needed."
+    },
+    {
+        "id": 27,
+        "category": "Server",
+        "issue_description": "Disk I/O latency significantly increased",
+        "solution_text": "Review storage controller logs for errors or retries. Check disk health using SMART diagnostics. Balance workloads or replace disks showing early failure signs."
+    },
+    {
+        "id": 28,
+        "category": "Server",
+        "issue_description": "Network interface not detected by OS",
+        "solution_text": "Verify the network adapter is enabled in BIOS. Install or update the appropriate network drivers. Reseat the adapter or test it in another system if detection fails."
+    },
+    {
+        "id": 29,
+        "category": "Server",
+        "issue_description": "Memory correctable errors increasing",
+        "solution_text": "Monitor error rates through the system management interface. Identify the affected DIMM slot and module. Schedule replacement of the memory module to prevent uncorrectable errors."
+    },
+    {
+        "id": 30,
+        "category": "Server",
+        "issue_description": "BMC web interface not responding",
+        "solution_text": "Check network connectivity to the management port. Restart the BMC controller without powering off the server. Update BMC firmware if responsiveness issues persist."
+    },
+    {
+        "id": 31,
+        "category": "Switch",
+        "issue_description": "MAC address table not learning new entries",
+        "solution_text": "Verify the switch is not in a restricted or monitor-only mode. Check for excessive broadcast traffic impacting learning. Reload the switch if the forwarding process is stalled."
+    },
+    {
+        "id": 32,
+        "category": "Switch",
+        "issue_description": "Spanning Tree blocking unexpected ports",
+        "solution_text": "Review STP topology and root bridge configuration. Ensure port roles and costs are correctly set. Adjust STP priorities to enforce the desired topology."
+    },
+    {
+        "id": 33,
+        "category": "Switch",
+        "issue_description": "High CPU usage on switch control plane",
+        "solution_text": "Identify processes consuming CPU resources using diagnostic commands. Check for excessive management traffic or loops. Apply control plane policing if supported."
+    },
+    {
+        "id": 34,
+        "category": "Switch",
+        "issue_description": "VLAN traffic leaking between segments",
+        "solution_text": "Verify VLAN tagging configuration on trunk ports. Ensure access ports are assigned to the correct VLANs. Check for misconfigured native VLAN settings."
+    },
+    {
+        "id": 35,
+        "category": "Switch",
+        "issue_description": "Firmware upgrade fails midway",
+        "solution_text": "Confirm sufficient flash storage is available before upgrading. Verify firmware image integrity using checksums. Retry the upgrade during a low-traffic maintenance window."
+    },
+    {
+        "id": 36,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit fails to start after power outage",
+        "solution_text": "Check circuit breakers and power feeds to the cooling unit. Perform a manual restart following vendor procedures. Inspect control boards for fault indicators."
+    },
+    {
+        "id": 37,
+        "category": "Cooling System",
+        "issue_description": "Humidity level outside recommended range",
+        "solution_text": "Verify humidity sensor calibration and readings. Adjust environmental controls to stabilize humidity. Inspect for air leaks or external moisture sources."
+    },
+    {
+        "id": 38,
+        "category": "Cooling System",
+        "issue_description": "Cooling system reports compressor fault",
+        "solution_text": "Check diagnostic codes on the cooling controller. Inspect refrigerant levels and electrical connections. Escalate to certified service personnel if the fault persists."
+    },
+    {
+        "id": 39,
+        "category": "Cooling System",
+        "issue_description": "Air filter clogged warning",
+        "solution_text": "Remove and inspect the air filter for dust buildup. Clean or replace the filter as recommended by the manufacturer. Reset the maintenance alert after servicing."
+    },
+    {
+        "id": 40,
+        "category": "Cooling System",
+        "issue_description": "Cooling fan speed fluctuating",
+        "solution_text": "Monitor temperature and fan telemetry for instability. Check control firmware for known issues. Replace the fan controller if regulation remains inconsistent."
+    },
+    {
+        "id": 41,
+        "category": "Router",
+        "issue_description": "Routing protocol neighbors flapping",
+        "solution_text": "Check link stability and error counters on connected interfaces. Verify authentication and hello timers match on both sides. Investigate underlying transport issues causing resets."
+    },
+    {
+        "id": 42,
+        "category": "Router",
+        "issue_description": "Management access slow over SSH",
+        "solution_text": "Check CPU and memory utilization during SSH sessions. Disable unnecessary logging or debug processes. Upgrade firmware to improve management plane performance."
+    },
+    {
+        "id": 43,
+        "category": "Router",
+        "issue_description": "Firewall rules not matching traffic",
+        "solution_text": "Review rule order and ensure more specific rules are placed first. Confirm interface direction and zones are correctly applied. Use packet counters to validate rule hits."
+    },
+    {
+        "id": 44,
+        "category": "Router",
+        "issue_description": "DHCP server not assigning addresses",
+        "solution_text": "Verify the DHCP service is running and bound to the correct interface. Check address pool exhaustion and lease duration. Review logs for conflict or authorization errors."
+    },
+    {
+        "id": 45,
+        "category": "Router",
+        "issue_description": "System clock drifting significantly",
+        "solution_text": "Configure reliable NTP servers and verify reachability. Check hardware clock settings. Restart time synchronization services if drift continues."
+    },
+    {
+        "id": 46,
+        "category": "Server",
+        "issue_description": "CPU thermal throttling detected",
+        "solution_text": "Monitor CPU temperature and cooling performance. Ensure heat sinks are properly seated and thermal paste is intact. Improve airflow or reduce workload as needed."
+    },
+    {
+        "id": 47,
+        "category": "Server",
+        "issue_description": "Virtualization host performance degraded",
+        "solution_text": "Check resource overcommitment for CPU and memory. Review storage latency impacting virtual machines. Rebalance workloads or migrate VMs if necessary."
+    },
+    {
+        "id": 48,
+        "category": "Server",
+        "issue_description": "System logs filling disk rapidly",
+        "solution_text": "Identify processes generating excessive log entries. Adjust log rotation policies to limit disk usage. Clear old logs after confirming no critical data is lost."
+    },
+    {
+        "id": 49,
+        "category": "Server",
+        "issue_description": "Power supply redundancy lost",
+        "solution_text": "Check the status LEDs on all power supply units. Replace the failed or disconnected PSU. Verify both power feeds are active and stable."
+    },
+    {
+        "id": 50,
+        "category": "Server",
+        "issue_description": "Firmware update causes compatibility issues",
+        "solution_text": "Review release notes for known incompatibilities. Roll back to the previous stable firmware if supported. Coordinate updates across dependent components."
+    },
+    {
+        "id": 51,
+        "category": "Switch",
+        "issue_description": "Stack member not joining switch stack",
+        "solution_text": "Verify stack cables are properly connected and undamaged. Ensure all stack members run the same firmware version. Power cycle the affected unit to retry joining."
+    },
+    {
+        "id": 52,
+        "category": "Switch",
+        "issue_description": "Port security violations detected",
+        "solution_text": "Identify unauthorized MAC addresses triggering the violation. Adjust port security limits if necessary. Clear the violation state after resolving the root cause."
+    },
+    {
+        "id": 53,
+        "category": "Switch",
+        "issue_description": "Multicast traffic flooding network",
+        "solution_text": "Ensure IGMP snooping is enabled on relevant VLANs. Verify multicast group memberships. Configure queriers to control multicast distribution."
+    },
+    {
+        "id": 54,
+        "category": "Switch",
+        "issue_description": "QoS policies not applied correctly",
+        "solution_text": "Check policy attachment points on interfaces. Verify classification and marking rules. Use traffic counters to confirm policy enforcement."
+    },
+    {
+        "id": 55,
+        "category": "Switch",
+        "issue_description": "Excessive broadcast traffic detected",
+        "solution_text": "Identify source devices generating broadcasts. Check for network loops or misconfigured devices. Apply storm control to limit broadcast impact."
+    },
+    {
+        "id": 56,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit running continuously",
+        "solution_text": "Verify temperature thresholds and control logic. Check for faulty sensors reporting incorrect readings. Recalibrate or replace sensors if necessary."
+    },
+    {
+        "id": 57,
+        "category": "Cooling System",
+        "issue_description": "Rack hotspot detected",
+        "solution_text": "Measure temperature distribution across the rack. Improve airflow with blanking panels and cable management. Adjust cooling output to target affected zones."
+    },
+    {
+        "id": 58,
+        "category": "Cooling System",
+        "issue_description": "Cooling controller firmware mismatch",
+        "solution_text": "Check firmware versions across redundant controllers. Align versions according to vendor recommendations. Restart controllers after upgrade to apply changes."
+    },
+    {
+        "id": 59,
+        "category": "Cooling System",
+        "issue_description": "Water leak sensor triggered",
+        "solution_text": "Inspect the area around the cooling unit for visible leaks. Shut down affected equipment if necessary to prevent damage. Engage facilities or maintenance teams immediately."
+    },
+    {
+        "id": 60,
+        "category": "Cooling System",
+        "issue_description": "Cooling system losing network connectivity",
+        "solution_text": "Check network cabling and switch port configuration. Verify IP settings on the cooling controller. Update firmware if network stability issues are known."
+    },
+    {
+        "id": 61,
+        "category": "Router",
+        "issue_description": "IPv6 traffic not routing correctly",
+        "solution_text": "Verify IPv6 addressing and routing configuration. Ensure IPv6 is enabled on required interfaces. Check firewall rules that may block IPv6 traffic."
+    },
+    {
+        "id": 62,
+        "category": "Router",
+        "issue_description": "Control plane protection dropping packets",
+        "solution_text": "Review control plane policing policies. Adjust rate limits to allow legitimate traffic. Monitor logs to confirm dropped packets decrease."
+    },
+    {
+        "id": 63,
+        "category": "Router",
+        "issue_description": "Route redistribution causing instability",
+        "solution_text": "Check redistribution rules between routing protocols. Apply route filtering to limit unnecessary prefixes. Stabilize metrics to prevent frequent recalculations."
+    },
+    {
+        "id": 64,
+        "category": "Router",
+        "issue_description": "System memory utilization consistently high",
+        "solution_text": "Identify processes consuming excessive memory. Disable unused services and features. Schedule a reboot if memory leaks are suspected."
+    },
+    {
+        "id": 65,
+        "category": "Router",
+        "issue_description": "ARP table overflow",
+        "solution_text": "Inspect the network for excessive ARP requests. Implement ARP rate limiting if supported. Increase table size or optimize network segmentation."
+    },
+    {
+        "id": 66,
+        "category": "Server",
+        "issue_description": "File system mounted read-only",
+        "solution_text": "Check system logs for disk or file system errors. Run file system checks during maintenance. Restore from backup if corruption is detected."
+    },
+    {
+        "id": 67,
+        "category": "Server",
+        "issue_description": "Hardware diagnostics report CPU error",
+        "solution_text": "Review diagnostic error codes and logs. Reseat the CPU if supported by vendor procedures. Replace the processor if errors persist."
+    },
+    {
+        "id": 68,
+        "category": "Server",
+        "issue_description": "Out-of-band management unreachable",
+        "solution_text": "Verify dedicated management network connectivity. Check BMC configuration and credentials. Reset the management controller if necessary."
+    },
+    {
+        "id": 69,
+        "category": "Server",
+        "issue_description": "Server stuck during shutdown",
+        "solution_text": "Identify processes preventing shutdown via system logs. Gracefully stop affected services. Perform a controlled power cycle if required."
+    },
+    {
+        "id": 70,
+        "category": "Server",
+        "issue_description": "Boot time significantly increased",
+        "solution_text": "Review hardware initialization logs. Disable unused boot devices. Update firmware to optimize startup routines."
+    },
+    {
+        "id": 71,
+        "category": "Switch",
+        "issue_description": "Access port not forwarding traffic",
+        "solution_text": "Verify the port is enabled and not in err-disable state. Check VLAN assignment and port security settings. Reset the port to clear transient errors."
+    },
+    {
+        "id": 72,
+        "category": "Switch",
+        "issue_description": "Trunk port not carrying all VLANs",
+        "solution_text": "Review allowed VLAN lists on the trunk. Ensure both ends of the link have matching configurations. Update trunk settings to include missing VLANs."
+    },
+    {
+        "id": 73,
+        "category": "Switch",
+        "issue_description": "Interface error counters increasing",
+        "solution_text": "Inspect cabling and transceivers for faults. Check for speed and duplex mismatches. Replace hardware components showing persistent errors."
+    },
+    {
+        "id": 74,
+        "category": "Switch",
+        "issue_description": "Switch rebooting unexpectedly",
+        "solution_text": "Check power stability and logs for crash reports. Update firmware to address known reboot bugs. Run hardware diagnostics to detect failures."
+    },
+    {
+        "id": 75,
+        "category": "Switch",
+        "issue_description": "Management VLAN unreachable from network",
+        "solution_text": "Verify routing to the management VLAN. Check access control lists blocking management traffic. Test connectivity locally to isolate routing issues."
+    },
+    {
+        "id": 76,
+        "category": "Cooling System",
+        "issue_description": "Cooling redundancy lost",
+        "solution_text": "Identify failed cooling modules or fans. Restore redundancy by replacing faulty components. Verify alarms clear after restoration."
+    },
+    {
+        "id": 77,
+        "category": "Cooling System",
+        "issue_description": "Temperature sensors reporting inconsistent values",
+        "solution_text": "Compare readings across multiple sensors. Recalibrate sensors showing deviation. Replace sensors that fail calibration checks."
+    },
+    {
+        "id": 78,
+        "category": "Cooling System",
+        "issue_description": "Cooling system maintenance alert triggered",
+        "solution_text": "Review maintenance logs and alert details. Perform recommended inspections or part replacements. Reset the alert after completing maintenance tasks."
+    },
+    {
+        "id": 79,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit unable to reach target temperature",
+        "solution_text": "Check cooling capacity relative to heat load. Inspect for blocked airflow or failing components. Increase cooling output or reduce server load as needed."
+    },
+    {
+        "id": 80,
+        "category": "Cooling System",
+        "issue_description": "Cooling controller rebooting repeatedly",
+        "solution_text": "Inspect power stability to the controller. Review logs for watchdog or firmware errors. Update or replace the controller if reboots continue."
+    },
+    {
+        "id": 81,
+        "category": "Router",
+        "issue_description": "Policy-based routing not applied",
+        "solution_text": "Verify route maps and access lists are correctly defined. Ensure policies are applied to the correct interfaces and directions. Test traffic to confirm policy behavior."
+    },
+    {
+        "id": 82,
+        "category": "Router",
+        "issue_description": "Interface queue drops observed",
+        "solution_text": "Monitor traffic patterns for congestion. Adjust queue sizes or QoS policies. Upgrade link capacity if sustained congestion persists."
+    },
+    {
+        "id": 83,
+        "category": "Router",
+        "issue_description": "Logging service consuming excessive resources",
+        "solution_text": "Reduce logging verbosity to essential levels. Redirect logs to an external server. Restart the logging service to free resources."
+    },
+    {
+        "id": 84,
+        "category": "Router",
+        "issue_description": "Failover not triggering during link failure",
+        "solution_text": "Verify tracking mechanisms for monitored links. Check failover thresholds and timers. Test failover scenarios after correcting configuration."
+    },
+    {
+        "id": 85,
+        "category": "Router",
+        "issue_description": "Configuration rollback fails",
+        "solution_text": "Ensure rollback points are properly saved. Check storage integrity for configuration files. Manually restore configuration from backup if rollback fails."
+    },
+    {
+        "id": 86,
+        "category": "Server",
+        "issue_description": "Application crashes under load",
+        "solution_text": "Monitor system resources during peak usage. Check for hardware bottlenecks or driver issues. Apply patches or scale resources to handle load."
+    },
+    {
+        "id": 87,
+        "category": "Server",
+        "issue_description": "NIC bonding not functioning",
+        "solution_text": "Verify bonding mode compatibility with connected switch configuration. Check driver and firmware versions. Restart network services after configuration changes."
+    },
+    {
+        "id": 88,
+        "category": "Server",
+        "issue_description": "System clock out of sync",
+        "solution_text": "Ensure NTP services are running and reachable. Check firewall rules blocking time synchronization. Force a manual time sync if required."
+    },
+    {
+        "id": 89,
+        "category": "Server",
+        "issue_description": "Hardware inventory not updating",
+        "solution_text": "Refresh inventory data through management tools. Check agent or management service status. Update firmware to fix reporting issues."
+    },
+    {
+        "id": 90,
+        "category": "Server",
+        "issue_description": "Unexpected shutdown due to power event",
+        "solution_text": "Review power logs and UPS status. Ensure redundant power paths are operational. Test power failover mechanisms."
+    },
+    {
+        "id": 91,
+        "category": "Switch",
+        "issue_description": "LLDP neighbors not displayed",
+        "solution_text": "Confirm LLDP is enabled globally and on interfaces. Check for protocol filtering. Restart LLDP service if neighbors are not learned."
+    },
+    {
+        "id": 92,
+        "category": "Switch",
+        "issue_description": "Transceiver not recognized",
+        "solution_text": "Verify transceiver compatibility with the switch model. Reseat the transceiver and clean fiber connectors. Replace with a supported module if needed."
+    },
+    {
+        "id": 93,
+        "category": "Switch",
+        "issue_description": "Port err-disabled due to BPDU guard",
+        "solution_text": "Identify the source of unexpected BPDUs. Correct network topology or disable BPDU guard where appropriate. Re-enable the port after resolving the issue."
+    },
+    {
+        "id": 94,
+        "category": "Switch",
+        "issue_description": "Traffic mirroring not working",
+        "solution_text": "Verify mirror session configuration and destination port status. Ensure sufficient bandwidth on the monitoring port. Reapply configuration if necessary."
+    },
+    {
+        "id": 95,
+        "category": "Switch",
+        "issue_description": "Switch running out of TCAM resources",
+        "solution_text": "Review feature usage consuming TCAM entries. Optimize ACLs and policies. Disable unused features to free resources."
+    },
+    {
+        "id": 96,
+        "category": "Cooling System",
+        "issue_description": "Cooling alarm not clearing after issue resolved",
+        "solution_text": "Verify that sensor readings have returned to normal ranges. Manually acknowledge or reset the alarm. Restart monitoring services if alarms persist."
+    },
+    {
+        "id": 97,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit operating in emergency mode",
+        "solution_text": "Check fault logs to identify triggering conditions. Reduce thermal load immediately. Restore normal operation after resolving underlying faults."
+    },
+    {
+        "id": 98,
+        "category": "Cooling System",
+        "issue_description": "Cooling system network configuration lost",
+        "solution_text": "Reconfigure IP and network settings on the controller. Restore configuration from backup if available. Secure settings to prevent future loss."
+    },
+    {
+        "id": 99,
+        "category": "Cooling System",
+        "issue_description": "Cooling unit power consumption unusually high",
+        "solution_text": "Check operating mode and load conditions. Inspect for failing components causing inefficiency. Schedule maintenance to address abnormal consumption."
+    },
+    {
+        "id": 100,
+        "category": "Cooling System",
+        "issue_description": "Cooling system fails self-test",
+        "solution_text": "Review self-test error codes provided by the controller. Inspect sensors and actuators involved in the test. Replace defective components before returning to service."
+    }
+]
