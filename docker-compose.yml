@@ -5,3 +5,32 @@ services:
       - "6333:6333"
     volumes:
       - ./infra/qdrant_storage:/qdrant/storage
+  
+  triton:
+    build: .
+    image: triton-image
+    container_name: triton-server
+    restart: unless-stopped
+    shm_size: '16g'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0']
+              capabilities: [gpu]
+    ports:
+      - "8000:8000" # HTTP
+      - "8001:8001" # gRPC
+      - "8002:8002" # Metrics
+    volumes:
+      - ./.cache/huggingface:/root/.cache/huggingface
+      - ./model_repository:/models
+    command: >
+      tritonserver
+      --model-repository=/models
+      --log-verbose=1
+      --allow-grpc=true
+      --allow-http=true
+      --strict-readiness=false
+      --backend-config=python,shm-default-byte-size=67108864
