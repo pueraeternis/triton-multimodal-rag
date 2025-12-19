@@ -1,0 +1,31 @@
+name: "reranker_py"
+backend: "python"
+max_batch_size: 0 
+
+input [
+  {
+    name: "query"
+    data_type: TYPE_STRING
+    dims: [ 1 ]
+  },
+  {
+    name: "candidates"
+    data_type: TYPE_STRING
+    dims: [ -1 ] 
+  }
+]
+
+output [
+  {
+    name: "scores"
+    data_type: TYPE_FP32
+    dims: [ -1 ] 
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+  }
+]
