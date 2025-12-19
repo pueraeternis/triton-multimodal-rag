@@ -1,0 +1,34 @@
+name: "yolo_onnx"
+platform: "onnxruntime_onnx"
+max_batch_size: 8
+
+dynamic_batching { 
+    preferred_batch_size: [ 4, 8 ]
+    max_queue_delay_microseconds: 100
+}
+
+input [
+  {
+    name: "images"
+    data_type: TYPE_FP32
+    dims: [ 3, 640, 640 ]
+  }
+]
+
+output [
+  {
+    name: "output0"
+    data_type: TYPE_FP32
+    # YOLOv8n output shape: [Batch, 84, 8400]
+    # 84 = 4 box coordinates + 80 classes (COCO)
+    # 8400 = number of anchors
+    dims: [ 84, 8400 ]
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+  }
+]
