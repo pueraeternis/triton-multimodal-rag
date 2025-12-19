@@ -1,0 +1,52 @@
+name: "embedding_onnx"
+platform: "onnxruntime_onnx"
+max_batch_size: 32
+
+dynamic_batching {
+    preferred_batch_size: [ 8, 16, 32 ]
+    max_queue_delay_microseconds: 200
+}
+
+input [
+  {
+    name: "input_ids"
+    data_type: TYPE_INT64
+    dims: [ -1 ]
+  },
+  {
+    name: "attention_mask"
+    data_type: TYPE_INT64
+    dims: [ -1 ]
+  },
+  {
+    name: "token_type_ids"
+    data_type: TYPE_INT64
+    dims: [ -1 ]
+  }
+]
+
+output [
+  {
+    name: "last_hidden_state"
+    data_type: TYPE_FP32
+    dims: [ -1, 384 ] 
+    # -1 (sequence length), 384 (hidden size for MiniLM)
+  }
+]
+
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+  }
+]
+
+optimization {
+  execution_accelerators {
+    gpu_execution_accelerator : [ {
+      name : "tensorrt"
+      parameters { key: "precision_mode" value: "FP16" }
+      parameters { key: "max_workspace_size_bytes" value: "1073741824" } # 1GB workspace
+    }]
+  }
+}
