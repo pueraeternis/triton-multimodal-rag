@@ -1,7 +1,20 @@
 [project]
 name = "triton-multimodal-rag"
 version = "0.1.0"
-description = "Add your description here"
+description = "High-performance Multimodal RAG Agent for Enterprise Technical Support"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "numpy>=2.3.5",
+    "onnxruntime-gpu>=1.23.2",
+    "optimum>=2.0.0",
+    "pandas>=2.3.3",
+    "pillow>=12.0.0",
+    "qdrant-client>=1.16.2",
+    "torch>=2.9.1",
+    "torchaudio>=2.9.1",
+    "torchvision>=0.24.1",
+    "transformers>=4.57.3",
+    "tritonclient[all]>=2.63.0",
+    "ultralytics>=8.3.240",
+]
