@@ -13,6 +13,7 @@ This project demonstrates **System Design** capabilities by orchestrating multip
 
 ## 🏗 Architecture
 
+```mermaid
 flowchart LR
     Client([Client Request]) -->|gRPC/HTTP| Triton[Triton Inference Server]
     
@@ -34,6 +35,7 @@ flowchart LR
     end
     
     Embed <-->|3. ANN Search| Qdrant[(Qdrant DB)]
+```
 
 The pipeline is implemented as a **Microservices-in-a-Monolith** pattern within NVIDIA Triton Inference Server. This approach minimizes network overhead by keeping tensor movement within the GPU memory/shared memory.
 
