@@ -13,6 +13,28 @@ This project demonstrates **System Design** capabilities by orchestrating multip
 
 ## 🏗 Architecture
 
+flowchart LR
+    Client([Client Request]) -->|gRPC/HTTP| Triton[Triton Inference Server]
+    
+    subgraph Triton [Triton Inference Server (BLS Orchestrator)]
+        direction TB
+        Orchestrator[BLS Python Backend]
+        
+        subgraph Models
+            YOLO[YOLOv8 Vision]
+            Embed[SentenceTransformer]
+            Rerank[Cross-Encoder]
+            LLM[vLLM / Qwen-3]
+        end
+        
+        Orchestrator -->|1. Check Image| YOLO
+        Orchestrator -->|2. Vectorize Query| Embed
+        Orchestrator -->|4. Re-rank Docs| Rerank
+        Orchestrator -->|5. Generate Answer| LLM
+    end
+    
+    Embed <-->|3. ANN Search| Qdrant[(Qdrant DB)]
+
 The pipeline is implemented as a **Microservices-in-a-Monolith** pattern within NVIDIA Triton Inference Server. This approach minimizes network overhead by keeping tensor movement within the GPU memory/shared memory.
 
 ### Data Flow (BLS Orchestrator)
