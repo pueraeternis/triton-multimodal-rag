@@ -11,7 +11,7 @@ input [
   {
     name: "images"
     data_type: TYPE_FP32
-    dims: [ 3, 640, 640 ]
+    dims: [ 3, -1, -1 ] 
   }
 ]
 
@@ -19,10 +19,7 @@ output [
   {
     name: "output0"
     data_type: TYPE_FP32
-    # YOLOv8n output shape: [Batch, 84, 8400]
-    # 84 = 4 box coordinates + 80 classes (COCO)
-    # 8400 = number of anchors
-    dims: [ 84, 8400 ]
+    dims: [ 84, -1 ]
   }
 ]
 

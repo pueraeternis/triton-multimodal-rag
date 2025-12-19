@@ -24,7 +24,7 @@ services:
       - "8001:8001" # gRPC
       - "8002:8002" # Metrics
     volumes:
-      - ./.cache/huggingface:/root/.cache/huggingface
+      - ${HOME}/.cache/huggingface:/root/.cache/huggingface
       - ./model_repository:/models
     command: >
       tritonserver
