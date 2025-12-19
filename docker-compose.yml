@@ -5,13 +5,17 @@ services:
       - "6333:6333"
     volumes:
       - ./infra/qdrant_storage:/qdrant/storage
-  
+    networks:
+      - triton_net
+
   triton:
     build: .
     image: triton-image
     container_name: triton-server
     restart: unless-stopped
     shm_size: '16g'
+    environment:
+      - QDRANT_URL=http://qdrant:6333
     deploy:
       resources:
         reservations:
@@ -34,3 +38,9 @@ services:
       --allow-http=true
       --strict-readiness=false
       --backend-config=python,shm-default-byte-size=67108864
+    networks:
+      - triton_net
+
+networks:
+  triton_net:
+    driver: bridge

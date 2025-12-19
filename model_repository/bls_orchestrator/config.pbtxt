@@ -6,12 +6,12 @@ input [
   {
     name: "query"
     data_type: TYPE_STRING
-    dims: [ 1 ]
+    dims: [ -1 ]
   },
   {
     name: "image"
     data_type: TYPE_FP32
-    dims: [ 3, 640, 640 ] 
+    dims: [ -1, 3, 640, 640 ]
   }
 ]
 
@@ -19,7 +19,7 @@ output [
   {
     name: "response"
     data_type: TYPE_STRING
-    dims: [ 1 ]
+    dims: [ -1 ]
   }
 ]
 

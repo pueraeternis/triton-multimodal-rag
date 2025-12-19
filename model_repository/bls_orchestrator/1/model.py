@@ -58,15 +58,19 @@ class TritonPythonModel:
             )
             _ = yolo_request.exec()
 
-            # Retrieval
+            # Retrieval (Qdrant)
             query_vector = self.embedder.encode(query_text).tolist()
-            search_result = self.qdrant.search(  # pyright: ignore[reportAttributeAccessIssue]
-                collection_name=self.collection_name,
-                query_vector=query_vector,
-                limit=5,
-            )
 
-            candidates = [hit.payload.get("solution", "") for hit in search_result]
+            search_response = self.qdrant.query_points(
+                collection_name=self.collection_name,
+                query=query_vector,
+                limit=5,
+                with_payload=True,
+            )
+            search_result = search_response.points
+
+            candidates = [(hit.payload or {}).get("solution", "") for hit in search_result]
+            candidates = [c for c in candidates if c]
 
             # Reranking
             if candidates:
@@ -98,11 +102,12 @@ class TritonPythonModel:
                         rerank_response,
                         "scores",
                     ).as_numpy()
-                    best_context = candidates[int(np.argmax(scores))]
+                    if len(scores) > 0:
+                        best_context = candidates[int(np.argmax(scores))]
             else:
                 best_context = "No relevant instructions found in the knowledge base."
 
-            # Prompt construction
+            # Prompt construction & LLM Generation
             messages = [
                 {
                     "role": "system",
@@ -151,16 +156,21 @@ class TritonPythonModel:
                 inputs=llm_inputs,
             )
 
-            llm_response = llm_request.exec()
+            llm_responses = llm_request.exec(decoupled=True)
 
-            if llm_response.has_error():
-                final_text = f"LLM error: {llm_response.error().message()}"
-            else:
+            final_text = ""
+
+            for response in llm_responses:
+                if response.has_error():
+                    final_text = f"LLM error: {response.error().message()}"
+                    break
+
                 output_tensor = pb_utils.get_output_tensor_by_name(
-                    llm_response,
+                    response,
                     "text_output",
                 )
-                final_text = output_tensor.as_numpy()[0].decode("utf-8")
+                if output_tensor:
+                    final_text += output_tensor.as_numpy()[0].decode("utf-8")
 
             response_tensor = pb_utils.Tensor(
                 "response",
