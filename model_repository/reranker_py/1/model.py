@@ -7,7 +7,7 @@ from sentence_transformers import CrossEncoder
 
 
 class TritonPythonModel:
-    def initialize(self, _args: dict[str, str]) -> None:
+    def initialize(self, _args: dict[str, str]):
         """Called once when the model is loaded."""
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         model_id = os.getenv(
@@ -19,16 +19,13 @@ class TritonPythonModel:
         self.model = CrossEncoder(model_id, device=self.device)
         print("[Reranker] Model loaded")
 
-    def execute(self, requests: list[pb_utils.InferenceRequest]):
+    def execute(self, requests):  # noqa: ANN001
         """Executed for each inference request."""
         responses = []
 
         for request in requests:
             query_tensor = pb_utils.get_input_tensor_by_name(request, "query")
-            candidates_tensor = pb_utils.get_input_tensor_by_name(
-                request,
-                "candidates",
-            )
+            candidates_tensor = pb_utils.get_input_tensor_by_name(request, "candidates")
 
             query = query_tensor.as_numpy()[0].decode("utf-8")
             candidates = [c.decode("utf-8") for c in candidates_tensor.as_numpy()]
@@ -48,6 +45,6 @@ class TritonPythonModel:
 
         return responses
 
-    def finalize(self) -> None:
+    def finalize(self):
         """Called once when the model is unloaded."""
         print("[Reranker] Shutdown complete")

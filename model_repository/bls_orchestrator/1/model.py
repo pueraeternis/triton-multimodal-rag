@@ -41,7 +41,7 @@ class TritonPythonModel:
             trust_remote_code=True,
         )
 
-    def execute(self, requests: list[pb_utils.InferenceRequest]):
+    def execute(self, requests):  # noqa: ANN001
         responses = []
 
         for request in requests:
