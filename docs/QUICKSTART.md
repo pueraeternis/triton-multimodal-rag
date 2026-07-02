@@ -74,6 +74,8 @@ cd triton-multimodal-rag
 uv sync
 ```
 
+Or use `make help` after install to see all workflow targets.
+
 ### 2. Configure Environment
 
 ```bash
@@ -90,7 +92,8 @@ Review `.env` — defaults target Qwen3-4B-Instruct-2507 on a local GPU. Key var
 ### 3. Export YOLO Model
 
 ```bash
-uv run scripts/export_yolo.py
+make export-models
+# or: uv run scripts/export_yolo.py
 ```
 
 Expected output: `model_repository/yolo_onnx/1/model.onnx` created.
@@ -98,8 +101,10 @@ Expected output: `model_repository/yolo_onnx/1/model.onnx` created.
 ### 4. Start Qdrant and Initialize Vector DB
 
 ```bash
-docker compose up -d qdrant
-uv run scripts/init_qdrant.py
+make init-qdrant
+# or manually:
+# docker compose up -d qdrant
+# uv run scripts/init_qdrant.py
 ```
 
 Expected log snippet:
@@ -118,7 +123,8 @@ curl -s http://localhost:6333/collections/technical_support | head
 ### 5. Build and Start Triton
 
 ```bash
-docker compose up -d --build triton
+make up
+# or: docker compose up -d --build triton
 ```
 
 Monitor startup:
@@ -138,6 +144,13 @@ Wait until all models report `READY`:
 
 > `embedding_onnx` may show `UNAVAILABLE` if the ONNX file has not been exported. This is expected — the active path uses in-process SentenceTransformer.
 
+Optional smoke check before inference:
+
+```bash
+make smoke-test MODE=online   # service readiness
+make smoke-test MODE=full     # one end-to-end inference (requires GPU)
+```
+
 Readiness check:
 
 ```bash
@@ -147,6 +160,8 @@ curl -s localhost:8000/v2/health/ready
 ### 6. Run Inference
 
 ```bash
+make client
+# or:
 uv run client.py \
   --image data/test_image.jpg \
   --query "Red status LED is blinking continuously on my Router. What to do?"
@@ -172,30 +187,40 @@ The client prints a per-stage trace and the generated answer. The example below 
 ============================================================
 Query: Red status LED is blinking continuously on my Router. What to do?
 ------------------------------------------------------------
-🔹 [YOLOv8 (Vision)] -> ~50ms
+🔹 [YOLOv8 (Vision)] -> ~600ms
 ------------------------------------------------------------
-🔹 [Qdrant (Retrieval)] -> ~15ms
+🔹 [Qdrant (Retrieval)] -> ~350ms
    Found: 5 docs
    Top-1: [Router] Red status LED blinking continuously...
 ------------------------------------------------------------
-🔹 [Cross-Encoder (Reranker)] -> ~10ms
+🔹 [Cross-Encoder (Reranker)] -> ~240ms
    Best Score: (varies)
    Context Used: "Check the router logs to identify the specific error code..."
 ------------------------------------------------------------
-🔹 [vLLM (Generation)] -> ~4s
+🔹 [vLLM (Generation)] -> ~3.8s
 ------------------------------------------------------------
-⏱  Total Latency: ~4–5s
+⏱  Total Latency: ~5s
 ============================================================
 🤖 AI RESPONSE:
-If the red status LED on your router is blinking continuously...
+Red status LED blinking continuously on your router typically indicates a critical error...
 ============================================================
 ```
+
+Latencies above are from maintainer validation on NVIDIA A100-SXM4-80GB (2026-07-02); your hardware will differ.
 
 Raw JSON response schema: [OBSERVABILITY.md](OBSERVABILITY.md)
 
 ---
 
 ## Troubleshooting
+
+### Qdrant Storage Version Mismatch
+
+**Symptoms:** Qdrant container exits on startup after changing the pinned image version; logs mention deserialize or shard holder errors.
+
+**Fixes:**
+- Remove incompatible persisted data: `docker compose down` then clear `infra/qdrant_storage` (files are owned by the container — use `docker run --rm -v $(pwd)/infra/qdrant_storage:/data alpine sh -c "rm -rf /data/*"`)
+- Re-run `make init-qdrant`
 
 ### CUDA Out of Memory
 
@@ -225,6 +250,7 @@ Raw JSON response schema: [OBSERVABILITY.md](OBSERVABILITY.md)
 - Ensure `model_repository/yolo_onnx/1/model.onnx` exists (run export script)
 - Verify NVIDIA Container Toolkit is installed and GPU is visible: `docker run --rm --gpus all nvidia/cuda:12.0-base nvidia-smi`
 - First LLM load can take several minutes — wait for `READY` in logs
+- If port 8000 is already in use, set `TRITON_HTTP_PORT` (and `TRITON_URL` for the client) — see [CONFIGURATION.md](CONFIGURATION.md)
 
 ### HuggingFace Authentication
 
@@ -247,16 +273,32 @@ Raw JSON response schema: [OBSERVABILITY.md](OBSERVABILITY.md)
 
 ---
 
-## Validated Environment (Placeholder)
+## Validated Environment
 
-> **Pending maintainer validation (Plan 02).** Plan 02 will include a fully validated reference environment. Exact software versions, driver details, and model IDs will be recorded after the first documented end-to-end validation run.
+Evidence from maintainer end-to-end validation on **2026-07-02**.
 
-The detailed validation matrix will be added in Plan 02. The structure below is prepared for that evidence:
+### Validated platform (tested)
 
-| | |
-|---|---|
-| **Primary validated platform** | _to be recorded in Plan 02_ |
-| **Additional expected-compatible platforms** | RTX 3090 · RTX 4090 · L40S · RTX PRO 6000 Ada |
+| Field | Value |
+|-------|-------|
+| GPU | NVIDIA A100-SXM4-80GB |
+| NVIDIA driver | 575.51.03 |
+| CUDA | 12.9 |
+| Python | 3.12.12 |
+| uv | 0.9.7 |
+| Triton image | `25.05-py3` |
+| vLLM | `0.10.2` |
+| vLLM backend SHA | `b41f716d15100dc7bcbea27ebea20906452dadf5` |
+| Qdrant | `v1.16.3` |
+| LLM model ID | `Qwen/Qwen3-4B-Instruct-2507` |
+| Embedding model ID | `sentence-transformers/all-MiniLM-L6-v2` |
+| Validation date | 2026-07-02 |
+
+### Expected-compatible platforms (not individually tested)
+
+Consumer GPUs with **16–24 GB VRAM** are expected to work based on the documented VRAM budget for the default Qwen3-4B-Instruct-2507 configuration. Illustrative fits: RTX 3090, RTX 4090, A10, L40S.
+
+These platforms are **not validated** unless listed in the table above. Match driver and CUDA requirements for your chosen Triton and vLLM versions.
 
 ---
 

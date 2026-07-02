@@ -1,9 +1,10 @@
 # Triton BLS Reference Architecture for Multimodal RAG
 
+![CI](https://github.com/pueraeternis/triton-multimodal-rag/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![NVIDIA Triton](https://img.shields.io/badge/NVIDIA%20Triton-25.05-green)
 ![vLLM](https://img.shields.io/badge/vLLM-0.10.2-orange)
-![Qdrant](https://img.shields.io/badge/Qdrant-v1.10-red)
+![Qdrant](https://img.shields.io/badge/Qdrant-v1.16-red)
 
 A demonstration of **production-oriented serving architecture** for multimodal Retrieval-Augmented Generation (RAG) on NVIDIA Triton Inference Server. The pipeline combines YOLO vision guardrails, Qdrant vector retrieval, cross-encoder reranking, and vLLM text generation — orchestrated entirely via **Business Logic Scripting (BLS)**.
 
@@ -24,7 +25,21 @@ A demonstration of **production-oriented serving architecture** for multimodal R
 
 ## Validated On
 
-> **Pending maintainer validation (Plan 02).** Exact environment details — GPU, driver, CUDA, container versions, and model IDs — will be recorded after the first documented end-to-end validation run. The validated-environment table will be added in Plan 02.
+Maintainer end-to-end validation on **2026-07-02** (see [QUICKSTART Validated Environment](docs/QUICKSTART.md#validated-environment) for full matrix).
+
+| Component | Version |
+|-----------|---------|
+| GPU | NVIDIA A100-SXM4-80GB |
+| NVIDIA driver | 575.51.03 |
+| CUDA | 12.9 |
+| Python | 3.12.12 |
+| uv | 0.9.7 |
+| Triton | 25.05-py3 |
+| vLLM | 0.10.2 |
+| vLLM backend | `b41f716` (r25.05) |
+| Qdrant | v1.16.3 |
+| LLM | `Qwen/Qwen3-4B-Instruct-2507` |
+| Embedding | `sentence-transformers/all-MiniLM-L6-v2` |
 
 ---
 
@@ -50,10 +65,9 @@ See [Quickstart](docs/QUICKSTART.md) for step-by-step setup and troubleshooting.
 
 - **Not production-ready** — no authentication, rate limiting, persistence guarantees, or HA deployment
 - **Current embedding implementation** — BLS uses in-process `SentenceTransformer`; `embedding_onnx` is exported separately and not yet wired into the serving path ([Plan 03](docs/plans/plan-03-engineering-hardening.md))
-- **No CI or automated tests yet** — arriving in [Plan 02](docs/plans/plan-02-reproducibility-validation.md)
 - **No bundled observability stack** — Triton exposes Prometheus metrics; Grafana dashboards are not included
 - **Synthetic knowledge base** — `data/knowledge_base.json` is hand-authored sample data, not production documentation
-- **End-to-end inference not yet maintainer-validated** — see **Validated On** above
+- **Generation env vars** — `LLM_TEMPERATURE`, `LLM_MAX_TOKENS`, and `LLM_TOP_P` are defined but not yet consumed by BLS ([Plan 03](docs/plans/plan-03-engineering-hardening.md))
 
 ---
 
@@ -153,6 +167,20 @@ graph LR
 
 ## Quick Start
 
+Use the Makefile for the documented happy path (`make help` lists all targets):
+
+```bash
+uv sync
+cp .env.example .env
+
+make export-models
+make init-qdrant
+make up          # start Qdrant + build/start Triton
+make client      # run inference after models are READY
+```
+
+Equivalent manual steps:
+
 ```bash
 uv sync
 cp .env.example .env
@@ -171,6 +199,8 @@ uv run client.py \
   --query "Red status LED is blinking continuously on my Router. What to do?"
 ```
 
+Optional pre-check after Triton startup: `make smoke-test MODE=online` or `make smoke-test MODE=full`.
+
 Full prerequisites, troubleshooting, and expected output: **[docs/QUICKSTART.md](docs/QUICKSTART.md)**
 
 ---
@@ -188,7 +218,7 @@ Configuration follows [12-Factor App](https://12factor.net/config) principles vi
 | `RERANKER_MODEL_ID` | Cross-encoder model | `ms-marco-MiniLM-L-6-v2` |
 | `YOLO_MODEL_NAME` | YOLO variant | `yolov8n` |
 
-See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the complete configuration reference *(coming in Plan 02)*.
+See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the complete configuration reference.
 
 ---
 
@@ -202,22 +232,22 @@ The client prints a per-stage execution trace. Representative output below illus
 ============================================================
 Query: Red status LED is blinking continuously on my Router. What to do?
 ------------------------------------------------------------
-🔹 [YOLOv8 (Vision)] -> ~50ms
+🔹 [YOLOv8 (Vision)] -> ~600ms
 ------------------------------------------------------------
-🔹 [Qdrant (Retrieval)] -> ~15ms
+🔹 [Qdrant (Retrieval)] -> ~350ms
    Found: 5 docs
    Top-1: [Router] Red status LED blinking continuously...
 ------------------------------------------------------------
-🔹 [Cross-Encoder (Reranker)] -> ~10ms
+🔹 [Cross-Encoder (Reranker)] -> ~240ms
    Best Score: (varies)
    Context Used: "Check the router logs to identify the specific error code..."
 ------------------------------------------------------------
-🔹 [vLLM (Generation)] -> ~4s
+🔹 [vLLM (Generation)] -> ~3.8s
 ------------------------------------------------------------
-⏱  Total Latency: ~4.5s
+⏱  Total Latency: ~5s
 ============================================================
 🤖 AI RESPONSE:
-If the red status LED on your router is blinking continuously, follow these steps:
+Red status LED blinking continuously on your router typically indicates a critical error...
 ...
 ```
 

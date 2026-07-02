@@ -1,13 +1,14 @@
 import argparse
 import json
+import os
 from typing import Any
 
 import numpy as np
 import tritonclient.http as httpclient
 from PIL import Image
 
-TRITON_URL = "localhost:8000"
-MODEL_NAME = "bls_orchestrator"
+TRITON_URL = os.getenv("TRITON_URL", "localhost:8000")
+MODEL_NAME = os.getenv("TRITON_MODEL_NAME", "bls_orchestrator")
 
 
 def load_image(image_path: str) -> np.ndarray:

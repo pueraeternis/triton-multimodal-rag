@@ -20,6 +20,24 @@ dependencies = [
     "ultralytics>=8.3.240",
 ]
 
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.9.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = ["model_repository"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+
 [tool.basedpyright]
 pythonVersion = "3.12"
 venvPath = "."

@@ -1,4 +1,7 @@
-qdrant-client>=1.16.2
-sentence-transformers>=5.2.0
-torch>=2.9.1
-transformers<4.56.0
+# BLS Python-backend dependencies for the Triton container.
+# Pinned from uv.lock — regenerate with: uv export --no-hashes -o infra/config/requirements.txt --only-package qdrant-client ...
+# Shared with local scripts where applicable; see CONTRIBUTING.md for container-only deps (vLLM, numpy 1.26.4).
+qdrant-client==1.16.2
+sentence-transformers==5.2.0
+torch==2.9.1
+transformers==4.55.4

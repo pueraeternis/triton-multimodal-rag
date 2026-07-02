@@ -9,7 +9,7 @@ from sentence_transformers import SentenceTransformer
 
 QDRANT_URL = os.getenv("QDRANT_URL", "http://localhost:6333")
 COLLECTION_NAME = os.getenv("QDRANT_COLLECTION", "technical_support")
-MODEL_NAME = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_ID", "sentence-transformers/all-MiniLM-L6-v2")
 DATA_PATH = os.getenv("DATA_PATH", "data/knowledge_base.json")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 

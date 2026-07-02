@@ -8,7 +8,7 @@ from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
 from transformers import AutoTokenizer
 
-QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant-server:6333")
+QDRANT_URL = os.getenv("QDRANT_URL", "http://qdrant:6333")
 QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "technical_support")
 
 EMBEDDING_MODEL_ID = os.getenv("EMBEDDING_MODEL_ID", "sentence-transformers/all-MiniLM-L6-v2")
