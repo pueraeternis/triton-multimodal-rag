@@ -1,166 +1,200 @@
-# High-Performance Multimodal RAG with NVIDIA Triton & vLLM
+# Triton BLS Reference Architecture for Multimodal RAG
 
 ![Python](https://img.shields.io/badge/Python-3.12-blue)
 ![NVIDIA Triton](https://img.shields.io/badge/NVIDIA%20Triton-25.05-green)
 ![vLLM](https://img.shields.io/badge/vLLM-0.10.2-orange)
 ![Qdrant](https://img.shields.io/badge/Qdrant-v1.10-red)
 
-An enterprise-grade **Multimodal Retrieval-Augmented Generation (RAG)** pipeline designed for automated technical support. The system processes visual data (equipment photos) and textual queries to retrieve specific repair instructions, utilizing a single GPU (NVIDIA A100) efficiently.
+A demonstration of **production-oriented serving architecture** for multimodal Retrieval-Augmented Generation (RAG) on NVIDIA Triton Inference Server. The pipeline combines YOLO vision guardrails, Qdrant vector retrieval, cross-encoder reranking, and vLLM text generation — orchestrated entirely via **Business Logic Scripting (BLS)**.
 
-This project demonstrates **System Design** capabilities by orchestrating multiple heterogeneous models (Vision, Embedding, Ranking, LLM) within a single Inference Server using **Business Logic Scripting (BLS)**.
+> **This is not a production deployment.** It is an educational project for engineers learning to compose heterogeneous models inside a single Triton instance.
 
 ---
 
-## 🏗 Architecture
+## What This Demonstrates
+
+- **BLS orchestration** — a single Python backend coordinates vision, retrieval, reranking, and generation without client-side DAG logic
+- **Model-agnostic serving** — the BLS call graph is independent of LLM identity or size; swap models via configuration
+- **Retrieve-then-rerank RAG** — vector search followed by cross-encoder refinement to reduce hallucinations
+- **Decoupled vLLM generation** — continuous batching via Triton's vLLM backend in decoupled mode
+- **Serving boundary clarity** — in-Triton models, in-process Python libraries, and external services (Qdrant) are explicitly separated
+- **Debug trace output** — per-stage latency and metadata returned with every response (see [Observability](docs/OBSERVABILITY.md))
+
+---
+
+## Validated On
+
+> **Pending maintainer validation (Plan 02).** Exact environment details — GPU, driver, CUDA, container versions, and model IDs — will be recorded after the first documented end-to-end validation run. The validated-environment table will be added in Plan 02.
+
+---
+
+## Hardware Requirements
+
+The default configuration requires a **single GPU with 16–24 GB VRAM** running **Qwen3-4B-Instruct-2507**. Consumer cards such as RTX 3090 or RTX 4090 are typical fits.
+
+| Component | Approximate VRAM |
+|-----------|-----------------|
+| Qwen3-4B-Instruct-2507 (vLLM, FP16) | ~8 GB |
+| YOLOv8n (ONNX) | ~0.5 GB |
+| Cross-encoder reranker | ~0.5 GB |
+| SentenceTransformer embedder (in-process) | ~0.5 GB |
+| **Total estimate** | **~10–14 GB** |
+
+Cold-start includes HuggingFace model downloads (~8 GB for Qwen3-4B-Instruct-2507 weights) and Triton model loading (2–5 minutes depending on disk and network).
+
+See [Quickstart](docs/QUICKSTART.md) for step-by-step setup and troubleshooting.
+
+---
+
+## Known Limitations
+
+- **Not production-ready** — no authentication, rate limiting, persistence guarantees, or HA deployment
+- **Current embedding implementation** — BLS uses in-process `SentenceTransformer`; `embedding_onnx` is exported separately and not yet wired into the serving path ([Plan 03](docs/plans/plan-03-engineering-hardening.md))
+- **No CI or automated tests yet** — arriving in [Plan 02](docs/plans/plan-02-reproducibility-validation.md)
+- **No bundled observability stack** — Triton exposes Prometheus metrics; Grafana dashboards are not included
+- **Synthetic knowledge base** — `data/knowledge_base.json` is hand-authored sample data, not production documentation
+- **End-to-end inference not yet maintainer-validated** — see **Validated On** above
+
+---
+
+## Model Substitution
+
+The BLS orchestration DAG is **model-agnostic**. To use a larger LLM (e.g. Qwen3-30B MoE on a datacenter GPU):
+
+1. Set `LLM_MODEL_ID` in `.env` (used by the BLS tokenizer)
+2. Update the `"model"` field in `model_repository/llm_vllm/1/model.json` (used by the vLLM backend)
+3. Adjust `max_model_len` and `gpu_memory_utilization` in `model.json` for your GPU
+4. Rebuild/restart the Triton container
+
+No changes to `bls_orchestrator/1/model.py` are required — the inference call graph stays the same.
+
+---
+
+## Architecture
 
 ```mermaid
 graph LR
-    Client([Client Request]) -->|gRPC/HTTP| Orchestrator
+    Client([Client Request]) -->|HTTP/gRPC| Orchestrator
 
-    subgraph "Triton Inference Server (BLS Orchestrator)"
+    subgraph "Triton Inference Server"
         direction TB
         Orchestrator[BLS Python Backend]
 
-        subgraph Models
-            YOLO[YOLOv8 Vision]
-            Embed[SentenceTransformer]
-            Rerank[Cross-Encoder]
-            LLM[vLLM / Qwen-3]
+        subgraph "In-Triton Models"
+            YOLO[YOLOv8 ONNX]
+            Rerank[Cross-Encoder Python]
+            LLM[vLLM / Qwen3-4B-Instruct-2507]
         end
 
-        Orchestrator -->|1. Check Image| YOLO
-        Orchestrator -->|2. Vectorize Query| Embed
-        Orchestrator -->|4. Re-rank Docs| Rerank
-        Orchestrator -->|5. Generate Answer| LLM
+        subgraph "In-Process Python"
+            Embed["SentenceTransformer<br/>(current implementation)"]
+        end
+
+        Orchestrator -->|1. Vision guardrail| YOLO
+        Orchestrator -->|2. Embed query| Embed
+        Orchestrator -->|4. Rerank candidates| Rerank
+        Orchestrator -->|5. Generate answer| LLM
     end
 
-    Embed <-->|3. ANN Search| Qdrant[(Qdrant DB)]
+    Embed <-->|3. ANN search| Qdrant[(Qdrant — external)]
 ```
 
-The pipeline is implemented as a **Microservices-in-a-Monolith** pattern within NVIDIA Triton Inference Server. This approach minimizes network overhead by keeping tensor movement within the GPU memory/shared memory.
+![Architecture diagram](docs/assets/architecture.svg)
 
-### Data Flow (BLS Orchestrator)
+> **Note:** `embedding_onnx` is also defined in the model repository as an exported ONNX variant. The BLS path above uses in-process `SentenceTransformer` by design today. See [Model Repository Guide](docs/MODEL_REPOSITORY.md) for details.
 
-1.  **Input:** User provides an image (e.g., a router with a red light) and a text query.
-2.  **Vision Guardrail:** `YOLOv8` (ONNX) scans the image.
-    *   *Purpose:* Fast filtering and context grounding.
-3.  **Retrieval:** `SentenceTransformers` converts the query to vectors -> Search in **Qdrant** (Vector DB).
-4.  **Reranking:** A `Cross-Encoder` model refines the top-5 candidates to find the single most relevant manual page.
-5.  **Reasoning:** `Qwen-3-30B-Instruct` (served via **vLLM**) generates the final answer based on the retrieved context.
+**Detailed design:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · **Model store reference:** [docs/MODEL_REPOSITORY.md](docs/MODEL_REPOSITORY.md)
 
----
+### Pipeline Stages
 
-## 🚀 Key Features
-
-*   **Unified Inference Platform:** All models (Vision, NLP, LLM) run on a single Triton instance.
-*   **Business Logic Scripting (BLS):** Complex DAG execution logic (conditionals, loops) is handled inside the server via Python Backend, reducing client-side complexity and latency.
-*   **State-of-the-Art LLM Serving:** Uses **vLLM** backend with `decoupled` mode for high-throughput continuous batching.
-*   **Precision RAG:** Implements a **Retrieve-then-Rerank** strategy to minimize hallucinations.
-*   **Production Ready:**
-    *   Fully reproducible environment using `uv` and Docker.
-    *   Metric export (Prometheus/Grafana ready).
-    *   Comprehensive tracing/logging for observability.
+1. **Input** — client sends a text query and a 640×640 FP32 image tensor
+2. **Vision guardrail** — `yolo_onnx` scans the image (output currently used for trace metadata)
+3. **Retrieval** — `SentenceTransformer` embeds the query; BLS queries Qdrant for top-5 candidates
+4. **Reranking** — `reranker_py` cross-encoder scores candidates; best document becomes LLM context
+5. **Generation** — `llm_vllm` (vLLM, decoupled) produces the final answer
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
-*   **Orchestration:** NVIDIA Triton Inference Server (25.05)
-*   **LLM Engine:** vLLM (supporting Qwen 3 MoE)
-*   **Vector Database:** Qdrant
-*   **Models:**
-    *   **LLM:** `Qwen/Qwen3-30B-A3B-Instruct-2507` (MoE)
-    *   **Vision:** `YOLOv8n` (ONNX export with dynamic batching)
-    *   **Embeddings:** `all-MiniLM-L6-v2`
-    *   **Reranker:** `ms-marco-MiniLM-L-6-v2`
-*   **Dependency Management:** uv
+| Layer | Technology |
+|-------|-----------|
+| Orchestration | NVIDIA Triton Inference Server 25.05 |
+| LLM serving | vLLM 0.10.2 (decoupled mode) |
+| Vector DB | Qdrant |
+| LLM (default) | `Qwen/Qwen3-4B-Instruct-2507` |
+| Vision | YOLOv8n (ONNX) |
+| Embeddings | `sentence-transformers/all-MiniLM-L6-v2` |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
+| Dependencies | uv |
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 .
-├── client.py                # Client script with trace reporting
-├── data                     # Test images and knowledge base source
-├── docker-compose.yml       # Infrastructure (Triton + Qdrant)
-├── Dockerfile               # Custom Triton image with vLLM and dependencies
-├── model_repository         # Triton Model Store
-│   ├── bls_orchestrator     # Python Logic (The "Brain")
-│   ├── llm_vllm             # Qwen 3 (vLLM Backend)
-│   ├── reranker_py          # Cross-Encoder (Python Backend)
-│   └── yolo_onnx            # Vision Model (ONNX Backend)
-├── scripts                  # ETL and Model Export scripts
-└── pyproject.toml           # Python dependencies
+├── client.py                  # HTTP client with trace reporting
+├── main.py                    # Entrypoint (delegates to client.py)
+├── data/                      # Test images and synthetic knowledge base
+├── docker-compose.yml         # Qdrant + Triton services
+├── Dockerfile                 # Custom Triton image (vLLM backend)
+├── docs/                      # Architecture, quickstart, observability guides
+├── model_repository/          # Triton model store
+│   ├── bls_orchestrator/      # BLS Python backend (orchestrator)
+│   ├── yolo_onnx/             # Vision model (ONNX)
+│   ├── embedding_onnx/        # Embedding export (not active path)
+│   ├── reranker_py/           # Cross-encoder (Python)
+│   └── llm_vllm/              # LLM (vLLM backend)
+└── scripts/                   # Model export and Qdrant initialization
 ```
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
-### 1. Prerequisites
-*   NVIDIA GPU (Ampere or newer recommended, e.g., A100/H100)
-*   Docker & NVIDIA Container Toolkit
-*   `uv` installed
-
-### 2. Setup
-Clone the repository and install dependencies:
 ```bash
 uv sync
-source .venv/bin/activate
-```
+cp .env.example .env
 
-### 3. Data Preparation
-Prepare the models and the vector database:
-```bash
-# Export YOLO to ONNX
+# Export YOLO, start Qdrant, initialize vector DB
 uv run scripts/export_yolo.py
-
-# Initialize Qdrant and upload knowledge base
 docker compose up -d qdrant
 uv run scripts/init_qdrant.py
-```
 
-### 4. Run Inference Server
-Build and start the Triton container:
-```bash
+# Build and start Triton (wait for all models READY)
 docker compose up -d --build triton
-```
-*Wait until all models show `READY` status in the logs.*
 
-### 5. Run Client
-Test the pipeline with a multimodal query:
-```bash
+# Run inference
 uv run client.py \
   --image data/test_image.jpg \
   --query "Red status LED is blinking continuously on my Router. What to do?"
 ```
 
-## ⚙️ Configuration
-
-The project follows the [12-Factor App](https://12factor.net/config) methodology. Configuration is managed via environment variables.
-
-1. Copy the example configuration:
-   ```bash
-   cp .env.example .env
-   ```
-
-2. Key variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `QDRANT_URL` | Vector DB endpoint | `http://localhost:6333` (Local) |
-| `LLM_MODEL_ID` | Model used by vLLM | `Qwen/Qwen3-30B...` |
-| `LLM_TEMPERATURE` | Creativity of the generation | `0.1` |
-| `YOLO_MODEL_NAME` | Vision model version | `yolov8n` |
-
-> **Note:** The `docker-compose.yml` is configured to inject these environment variables into the Triton container automatically ensuring consistency between local development and containerized execution.
+Full prerequisites, troubleshooting, and expected output: **[docs/QUICKSTART.md](docs/QUICKSTART.md)**
 
 ---
 
-## 📊 Example Output
+## Configuration
 
-The system provides a detailed execution trace for observability:
+Configuration follows [12-Factor App](https://12factor.net/config) principles via environment variables. Copy `.env.example` to `.env` and adjust as needed.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `QDRANT_URL` | Vector DB endpoint | `http://localhost:6333` |
+| `LLM_MODEL_ID` | HuggingFace model for BLS tokenizer | `Qwen/Qwen3-4B-Instruct-2507` |
+| `LLM_TEMPERATURE` | Generation temperature | `0.1` |
+| `EMBEDDING_MODEL_ID` | SentenceTransformer model | `all-MiniLM-L6-v2` |
+| `RERANKER_MODEL_ID` | Cross-encoder model | `ms-marco-MiniLM-L-6-v2` |
+| `YOLO_MODEL_NAME` | YOLO variant | `yolov8n` |
+
+See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the complete configuration reference *(coming in Plan 02)*.
+
+---
+
+## Example Output
+
+The client prints a per-stage execution trace. Representative output below illustrates the response structure; latencies are approximate and will vary by hardware:
 
 ```text
 ============================================================
@@ -168,34 +202,44 @@ The system provides a detailed execution trace for observability:
 ============================================================
 Query: Red status LED is blinking continuously on my Router. What to do?
 ------------------------------------------------------------
-🔹 [YOLOv8 (Vision)] -> 47.31ms
+🔹 [YOLOv8 (Vision)] -> ~50ms
 ------------------------------------------------------------
-🔹 [Qdrant (Retrieval)] -> 13.64ms
+🔹 [Qdrant (Retrieval)] -> ~15ms
    Found: 5 docs
    Top-1: [Router] Red status LED blinking continuously...
 ------------------------------------------------------------
-🔹 [Cross-Encoder (Reranker)] -> 10.27ms
-   Best Score: -2.6081
+🔹 [Cross-Encoder (Reranker)] -> ~10ms
+   Best Score: (varies)
    Context Used: "Check the router logs to identify the specific error code..."
 ------------------------------------------------------------
-🔹 [vLLM (Generation)] -> 4496.82ms
+🔹 [vLLM (Generation)] -> ~4s
 ------------------------------------------------------------
-⏱  Total Latency: 4.57s
+⏱  Total Latency: ~4.5s
 ============================================================
 🤖 AI RESPONSE:
 If the red status LED on your router is blinking continuously, follow these steps:
-
-1. **Check Router Logs:** Access your router’s web interface to look for error messages.
-2. **Verify Power Stability:** Ensure the router is plugged into a stable outlet.
-3. **Reboot:** Power off, wait 30 seconds, and power on.
-4. **Update Firmware:** Check the manufacturer’s website for updates.
 ...
 ```
 
+JSON response schema and trace field reference: [docs/OBSERVABILITY.md](docs/OBSERVABILITY.md)
+
 ---
 
-## 💡 Design Decisions
+## Design Decisions
 
-*   **Why BLS?** Instead of chaining microservices via HTTP (which adds network latency), BLS allows the pipeline to run entirely within the C++ backend of Triton, sharing memory pointers where possible.
-*   **Why Qwen 3?** It offers SOTA performance with a Mixture-of-Experts (MoE) architecture, providing the reasoning capabilities of larger models with significantly lower inference costs.
-*   **Why Reranking?** Vector search relies on cosine similarity, which captures general semantic meaning. The Cross-Encoder reranker ensures that the specific *nuance* of the query matches the retrieved document, significantly improving RAG accuracy.
+- **Why Triton?** Triton provides a unified inference runtime for model lifecycle, scheduling, batching, and orchestration — keeping the client a thin HTTP caller instead of a pipeline coordinator.
+- **Why BLS?** Chaining models via HTTP microservices adds network latency. BLS runs the DAG inside Triton's C++ runtime, sharing memory where possible.
+- **Why Qwen3-4B-Instruct-2507 as default?** The educational goal is the **serving architecture**, not LLM scale. Qwen3-4B-Instruct-2507 runs on a single consumer GPU; larger models (Qwen3-30B MoE, etc.) are drop-in upgrades via `LLM_MODEL_ID` and `model.json`.
+- **Why reranking?** Cosine similarity captures general semantics; a cross-encoder scores query–document pairs directly, improving context selection for RAG.
+
+---
+
+## Contributing & Security
+
+- [CONTRIBUTING.md](CONTRIBUTING.md) — development setup and contribution guidelines
+- [SECURITY.md](SECURITY.md) — vulnerability reporting (demonstration project, not a supported product)
+- [docs/LICENSES.md](docs/LICENSES.md) — upstream model and data licenses
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE). Upstream models and datasets carry their own licenses — see [docs/LICENSES.md](docs/LICENSES.md).

@@ -1,7 +1,7 @@
 [project]
 name = "triton-multimodal-rag"
 version = "0.1.0"
-description = "High-performance Multimodal RAG Agent for Enterprise Technical Support"
+description = "Triton BLS reference architecture for multimodal RAG with YOLO guardrails, Qdrant retrieval, and vLLM generation"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
@@ -19,3 +19,8 @@ dependencies = [
     "tritonclient[all]>=2.63.0",
     "ultralytics>=8.3.240",
 ]
+
+[tool.basedpyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"

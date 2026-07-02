@@ -13,7 +13,7 @@ QDRANT_COLLECTION = os.getenv("QDRANT_COLLECTION", "technical_support")
 
 EMBEDDING_MODEL_ID = os.getenv("EMBEDDING_MODEL_ID", "sentence-transformers/all-MiniLM-L6-v2")
 EMBEDDING_DEVICE = os.getenv("EMBEDDING_DEVICE", "cuda")
-LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "Qwen/Qwen3-30B-A3B-Instruct-2507")
+LLM_MODEL_ID = os.getenv("LLM_MODEL_ID", "Qwen/Qwen3-4B-Instruct-2507")
 
 
 class TritonPythonModel:
@@ -23,7 +23,7 @@ class TritonPythonModel:
         self.embedder = SentenceTransformer(EMBEDDING_MODEL_ID, device=EMBEDDING_DEVICE)
         self.tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_ID, trust_remote_code=True)
 
-    def execute(self, requests):  # noqa: ANN001, PLR0915
+    def execute(self, requests):  # noqa: ANN001
         responses = []
         for request in requests:
             trace = {"steps": []}
