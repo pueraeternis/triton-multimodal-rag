@@ -66,9 +66,10 @@ Full setup details: [docs/QUICKSTART.md](docs/QUICKSTART.md)
 ### Local CPU tests
 
 ```bash
-make test           # pytest — no GPU or running services required
-make check-config   # .env.example vs docs/CONFIGURATION.md
-make smoke-test     # offline file/config checks (CI-safe)
+make test            # pytest — no GPU or running services required
+make check-config    # .env.example vs docs/CONFIGURATION.md
+make smoke-test      # offline file/config checks (CI-safe)
+make eval-retrieval  # retrieval/reranking regression check (CPU-only)
 ```
 
 ### Smoke test (online / full)
@@ -139,19 +140,8 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the full environment vari
 | Documentation | Fix inaccuracies, improve diagrams, add troubleshooting entries |
 | Configuration | Sensible defaults, clearer `.env.example` comments |
 | Scripts | Export script improvements, better error messages |
-| Tests | Contract tests for config/model repository consistency |
-| Code quality | BLS error handling, embedding path resolution (see Plan 03) |
-
----
-
-## What Is Planned (Not Yet Available)
-
-| Capability | Plan |
-|------------|------|
-| Embedding path resolution | [Plan 03](docs/plans/plan-03-engineering-hardening.md) |
-| Structured BLS error handling | [Plan 03](docs/plans/plan-03-engineering-hardening.md) |
-| BLS generation-parameter wiring | [Plan 03](docs/plans/plan-03-engineering-hardening.md) |
-| Retrieval evaluation metrics | [Plan 03](docs/plans/plan-03-engineering-hardening.md) |
+| Tests | Contract tests for config/model repository consistency, BLS error handling, retrieval eval |
+| Code quality | BLS orchestration, client error display, retrieval pipeline |
 
 ---
 

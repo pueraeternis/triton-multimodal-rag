@@ -1,4 +1,4 @@
-.PHONY: help export-models up down init-qdrant smoke-test test client check-config
+.PHONY: help export-models up down init-qdrant smoke-test test client check-config eval-retrieval
 
 UV := uv run
 
@@ -32,3 +32,6 @@ client: ## Run inference client with default test image and query (QUICKSTART st
 
 check-config: ## Verify .env.example matches docs/CONFIGURATION.md
 	$(UV) pytest tests/test_configuration.py -q
+
+eval-retrieval: ## Evaluate retrieval and reranking (CPU, no Triton)
+	$(UV) scripts/eval_retrieval.py

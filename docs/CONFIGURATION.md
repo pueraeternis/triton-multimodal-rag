@@ -34,9 +34,9 @@ Host scripts and the Triton container therefore share one `.env` file: Python lo
 | `RERANKER_TRITON_MODEL_NAME` | `reranker_py` | (documentation) | Triton model name for reranker. |
 | `LLM_MODEL_ID` | `Qwen/Qwen3-4B-Instruct-2507` | BLS tokenizer | HuggingFace model ID for chat template tokenization. Must match `model.json` `"model"` field. |
 | `LLM_TRITON_MODEL_NAME` | `llm_vllm` | (documentation) | Triton model name for vLLM backend. |
-| `LLM_TEMPERATURE` | `0.1` | (Plan 03) | Generation temperature — defined here; wired into BLS vLLM requests in Plan 03. |
-| `LLM_MAX_TOKENS` | `512` | (Plan 03) | Maximum tokens to generate — defined here; wired in Plan 03. |
-| `LLM_TOP_P` | `0.95` | (Plan 03) | Top-p sampling — defined here; wired in Plan 03. |
+| `LLM_TEMPERATURE` | `0.1` | BLS | Generation temperature passed to vLLM `sampling_parameters`. |
+| `LLM_MAX_TOKENS` | `512` | BLS | Maximum tokens to generate — passed to vLLM `sampling_parameters`. |
+| `LLM_TOP_P` | `0.95` | BLS | Top-p sampling — passed to vLLM `sampling_parameters`. |
 | `LOG_LEVEL` | `INFO` | export/init scripts | Python logging level. |
 
 ### Docker Compose overrides

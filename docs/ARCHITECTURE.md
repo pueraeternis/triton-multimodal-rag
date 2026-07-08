@@ -16,7 +16,7 @@ The architecture is a **single-runtime multi-model** design: a single Triton ins
 
 | Component | Location | Responsibility |
 |-----------|----------|---------------|
-| **Client** (`client.py`) | Host machine | Loads image, sends HTTP inference request, prints trace report |
+| **Client** (`client.py`) | Host machine | Loads image, sends HTTP inference request, prints trace report (including structured errors); supports `--json` for raw response |
 | **Triton Inference Server** | Docker container | Hosts all model backends and the BLS orchestrator |
 | **BLS Orchestrator** (`bls_orchestrator`) | In-Triton Python backend | Executes the RAG DAG via `InferenceRequest` calls |
 | **YOLO** (`yolo_onnx`) | In-Triton ONNX backend | Vision guardrail — scans input image |
@@ -35,7 +35,7 @@ Understanding where code runs is critical for production planning:
 | **In-process Python libraries** | `SentenceTransformer`, `QdrantClient`, `AutoTokenizer` | Loaded in BLS `initialize()`; not separate Triton models |
 | **External services** | Qdrant | Network call from BLS; not managed by Triton |
 
-> **Current embedding implementation:** The BLS path uses in-process `SentenceTransformer.encode()` by design today. An `embedding_onnx` model is also defined in the model repository (with export script `scripts/export_embedding.py`). [Plan 03](plans/plan-03-engineering-hardening.md) will evaluate whether the serving path should be unified under the ONNX backend.
+> **Embedding path:** The BLS orchestrator uses in-process `SentenceTransformer.encode()` by design. An `embedding_onnx` model is also defined in the model repository (with export script `scripts/export_embedding.py`) as an alternate ONNX backend; it is exported but not wired into the BLS call graph.
 
 ---
 
@@ -146,8 +146,26 @@ Keeping models inside Triton avoids serializing/deserializing tensors over HTTP 
 | **Authentication** | Triton HTTP/gRPC endpoints are unauthenticated; place behind an API gateway with auth |
 | **Persistence** | Qdrant data is stored in a Docker volume; back up `infra/qdrant_storage` for durability |
 | **Scaling limits** | Single Triton instance, single GPU; horizontal scaling requires model replication and load balancing |
-| **Error handling** | BLS continues on partial failures (e.g., empty reranker scores); production should define fail-fast policies |
+| **Error handling** | BLS returns per-stage `ok` / `degraded` / `failed` statuses in the debug trace; see [Stage status and fallbacks](#stage-status-and-fallbacks) |
 | **Observability** | Debug traces are returned per-request; Triton Prometheus metrics are available at `:8002/metrics` (see [OBSERVABILITY.md](OBSERVABILITY.md)) |
+
+---
+
+## Stage Status and Fallbacks
+
+Each pipeline stage reports a `stage_status` in `debug.steps`: `ok`, `degraded`, or `failed`. The trace also includes `debug.overall_status`, computed as the worst status across stages (`failed` > `degraded` > `ok`).
+
+Fatal failures add a top-level `error` object (`stage`, `stage_status`, `message`) and return an empty `answer` instead of a silent blank response.
+
+| Stage | Fatal (`failed`) | Degraded (`degraded`) | Fallback when degraded |
+|-------|------------------|----------------------|-------------------------|
+| **Input** | Empty query or image shape ≠ `[1, 3, 640, 640]` | — | Request stops; no downstream stages run |
+| **YOLO** | — | `yolo_onnx` inference error | Pipeline continues; vision output is not required for retrieval |
+| **Qdrant** | — | Query exception or zero candidates | Use `No relevant instructions found.` as context |
+| **Reranker** | — | Inference error, empty scores, or no candidates to rank | Use top retrieval candidate, or default context if retrieval was empty |
+| **vLLM** | Inference error or empty generation | — | Request fails with structured `error`; prior stage traces are preserved |
+
+Successful inference with one or more degraded upstream stages still returns `answer` plus the full debug trace. Only input validation and generation failures are fatal.
 
 ---
 

@@ -1,7 +1,6 @@
-# Docs
+# Docs (internal planning and audit notes — not linked from user-facing docs)
 docs/audit
 docs/plans
-docs/validation
 
 # Data
 infra/qdrant_storage

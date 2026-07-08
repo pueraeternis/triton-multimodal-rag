@@ -68,10 +68,9 @@ See [Quickstart](docs/QUICKSTART.md) for step-by-step setup and troubleshooting.
 ## Known Limitations
 
 - **Not production-ready** — no authentication, rate limiting, persistence guarantees, or HA deployment
-- **Current embedding implementation** — BLS uses in-process `SentenceTransformer`; `embedding_onnx` is exported separately and not yet wired into the serving path ([Plan 03](docs/plans/plan-03-engineering-hardening.md))
+- **Embedding path** — BLS uses in-process `SentenceTransformer` by design; `embedding_onnx` is exported separately but is not on the active serving path
 - **No bundled observability stack** — Triton exposes Prometheus metrics; Grafana dashboards are not included
 - **Synthetic knowledge base** — `data/knowledge_base.json` is hand-authored sample data, not production documentation
-- **Generation env vars** — `LLM_TEMPERATURE`, `LLM_MAX_TOKENS`, and `LLM_TOP_P` are defined but not yet consumed by BLS ([Plan 03](docs/plans/plan-03-engineering-hardening.md))
 
 ---
 
@@ -152,19 +151,20 @@ graph LR
 
 ```text
 .
-├── client.py                  # HTTP client with trace reporting
+├── client.py                  # HTTP client with trace reporting, structured errors, --json
 ├── main.py                    # Entrypoint (delegates to client.py)
-├── data/                      # Test images and synthetic knowledge base
+├── data/                      # Test images, synthetic knowledge base, eval queries
 ├── docker-compose.yml         # Qdrant + Triton services
 ├── Dockerfile                 # Custom Triton image (vLLM backend)
 ├── docs/                      # Architecture, quickstart, observability guides
+├── eval/                      # Retrieval/reranking evaluation pipeline (CPU-only)
 ├── model_repository/          # Triton model store
 │   ├── bls_orchestrator/      # BLS Python backend (orchestrator)
 │   ├── yolo_onnx/             # Vision model (ONNX)
 │   ├── embedding_onnx/        # Embedding export (not active path)
 │   ├── reranker_py/           # Cross-encoder (Python)
 │   └── llm_vllm/              # LLM (vLLM backend)
-└── scripts/                   # Model export and Qdrant initialization
+└── scripts/                   # Model export, Qdrant init, smoke test, retrieval eval
 ```
 
 ---

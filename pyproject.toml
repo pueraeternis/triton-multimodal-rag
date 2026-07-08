@@ -34,12 +34,9 @@ pythonpath = ["."]
 [tool.ruff]
 line-length = 120
 target-version = "py312"
-exclude = ["model_repository"]
+extend-exclude = [
+    "model_repository/**/model.onnx",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
-
-[tool.basedpyright]
-pythonVersion = "3.12"
-venvPath = "."
-venv = ".venv"

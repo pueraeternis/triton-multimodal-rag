@@ -167,6 +167,8 @@ uv run client.py \
   --query "Red status LED is blinking continuously on my Router. What to do?"
 ```
 
+Add `--json` to print the raw BLS response (including `error` and `debug` fields) instead of the formatted trace report.
+
 Alternative entrypoint:
 
 ```bash
@@ -308,4 +310,5 @@ These platforms are **not validated** unless listed in the table above. Expected
 - [ARCHITECTURE.md](ARCHITECTURE.md) — system design and serving boundaries
 - [MODEL_REPOSITORY.md](MODEL_REPOSITORY.md) — per-model tensor specifications
 - [OBSERVABILITY.md](OBSERVABILITY.md) — trace schema and Prometheus metrics
+- [validation/retrieval-evaluation.md](validation/retrieval-evaluation.md) — retrieval/reranking regression check (`make eval-retrieval`)
 - [CONTRIBUTING.md](../CONTRIBUTING.md) — development workflow

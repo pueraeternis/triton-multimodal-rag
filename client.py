@@ -21,19 +21,47 @@ def load_image(image_path: str) -> np.ndarray:
     return np.expand_dims(img_data, axis=0)
 
 
+def _print_step_issues(step: dict[str, Any]) -> None:
+    stage_status = step.get("stage_status")
+    if stage_status not in ("degraded", "failed"):
+        return
+    print(f"   Status: {stage_status}")
+    if error := step.get("error"):
+        print(f"   Error: {error}")
+    if fallback := step.get("fallback"):
+        print(f"   Fallback: {fallback}")
+
+
 def print_report(data: dict[str, Any]) -> None:
-    """Вывод красивого отчета"""
+    """Pretty-print the BLS pipeline trace and answer."""
     trace = data.get("debug", {})
+    error = data.get("error")
+
     print("\n" + "=" * 60)
     print("🕵️  PIPELINE EXECUTION REPORT")
     print("=" * 60)
+
+    if error:
+        print("❌ PIPELINE ERROR")
+        print(f"   Stage: {error.get('stage')}")
+        print(f"   Status: {error.get('stage_status')}")
+        print(f"   Message: {error.get('message')}")
+        print("-" * 60)
+
+    overall_status = trace.get("overall_status")
+    if overall_status == "degraded" and error is None:
+        print("⚠️  Pipeline completed with degraded stage(s)")
+        print("-" * 60)
+
     print(f"Query: {trace.get('input_query')}")
     print("-" * 60)
 
     for step in trace.get("steps", []):
-        name = step.get("component")
+        name = step.get("component", "")
         latency = step.get("latency_ms")
         print(f"🔹 [{name}] -> {latency}ms")
+
+        _print_step_issues(step)
 
         if "Qdrant" in name:
             print(f"   Found: {step.get('candidates_found')} docs")
@@ -47,7 +75,9 @@ def print_report(data: dict[str, Any]) -> None:
 
         print("-" * 60)
 
-    print(f"⏱  Total Latency: {trace.get('total_latency_ms') / 1000:.2f}s")
+    total_latency_ms = trace.get("total_latency_ms")
+    if total_latency_ms is not None:
+        print(f"⏱  Total Latency: {total_latency_ms / 1000:.2f}s")
     print("=" * 60)
     print("🤖 AI RESPONSE:")
     print(data.get("answer"))
@@ -58,6 +88,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--image", type=str, required=True)
     parser.add_argument("--query", type=str, required=True)
+    parser.add_argument("--json", action="store_true", help="Print raw JSON response")
     args = parser.parse_args()
 
     client = httpclient.InferenceServerClient(url=TRITON_URL)
@@ -78,7 +109,10 @@ def main():
     raw_result = response.as_numpy("response")[0].decode("utf-8")  # pyright: ignore[reportOptionalSubscript]
     try:
         json_result = json.loads(raw_result)
-        print_report(json_result)
+        if args.json:
+            print(json.dumps(json_result, indent=2))
+        else:
+            print_report(json_result)
     except json.JSONDecodeError:
         print("Raw output (not JSON):", raw_result)
 

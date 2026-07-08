@@ -115,7 +115,7 @@ Each entry in `debug.steps` corresponds to one pipeline stage:
 }
 ```
 
-> Latencies and scores above are representative. A maintainer-validated run with exact numbers is planned for [Plan 02](plans/plan-02-reproducibility-validation.md).
+> Latencies and scores above are representative. Maintainer-validated evidence is recorded in [plan-02-validation.md](validation/plan-02-validation.md).
 
 ---
 

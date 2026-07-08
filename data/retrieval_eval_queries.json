@@ -1,0 +1,34 @@
+[
+    {
+        "query": "Red status LED is blinking continuously on my Router. What to do?",
+        "expected_id": 1
+    },
+    {
+        "query": "Intermittent packet loss on the WAN interface of our edge router",
+        "expected_id": 2
+    },
+    {
+        "query": "VPN tunnels are failing to establish between sites",
+        "expected_id": 5
+    },
+    {
+        "query": "BIOS is not detecting installed memory on the server",
+        "expected_id": 8
+    },
+    {
+        "query": "RAID controller is reporting a degraded array",
+        "expected_id": 7
+    },
+    {
+        "query": "Switch management interface is unreachable",
+        "expected_id": 13
+    },
+    {
+        "query": "PoE devices connected to the switch are not receiving power",
+        "expected_id": 12
+    },
+    {
+        "query": "Cooling unit raised a temperature alarm in the datacenter",
+        "expected_id": 16
+    }
+]
