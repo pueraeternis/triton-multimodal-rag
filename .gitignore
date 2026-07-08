@@ -1,6 +1,7 @@
 # Docs
 docs/audit
 docs/plans
+docs/validation
 
 # Data
 infra/qdrant_storage

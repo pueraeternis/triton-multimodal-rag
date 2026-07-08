@@ -23,9 +23,9 @@ A demonstration of **production-oriented serving architecture** for multimodal R
 
 ---
 
-## Validated On
+## Validated Platform
 
-Maintainer end-to-end validation on **2026-07-02** (see [QUICKSTART Validated Environment](docs/QUICKSTART.md#validated-environment) for full matrix).
+Maintainer end-to-end validation on **2026-07-02** used the hardware and software below. Evidence: [docs/validation/plan-02-validation.md](docs/validation/plan-02-validation.md).
 
 | Component | Version |
 |-----------|---------|
@@ -41,11 +41,15 @@ Maintainer end-to-end validation on **2026-07-02** (see [QUICKSTART Validated En
 | LLM | `Qwen/Qwen3-4B-Instruct-2507` |
 | Embedding | `sentence-transformers/all-MiniLM-L6-v2` |
 
+This table records **what was tested**, not a compatibility guarantee for other GPUs.
+
 ---
 
-## Hardware Requirements
+## Expected-Compatible Hardware
 
-The default configuration requires a **single GPU with 16–24 GB VRAM** running **Qwen3-4B-Instruct-2507**. Consumer cards such as RTX 3090 or RTX 4090 are typical fits.
+The default configuration targets **Qwen3-4B-Instruct-2507** on a **single GPU with approximately 16–24 GB VRAM**. Consumer cards such as RTX 3090 or RTX 4090 are typical fits based on the VRAM budget below.
+
+**Expected compatibility is not the same as validated hardware.** The maintainer run above used an NVIDIA A100-SXM4-80GB; consumer GPUs in the 16–24 GB class have not been individually validated in this repository unless listed in the validated platform table.
 
 | Component | Approximate VRAM |
 |-----------|-----------------|
@@ -170,7 +174,7 @@ graph LR
 Use the Makefile for the documented happy path (`make help` lists all targets):
 
 ```bash
-uv sync
+uv sync --locked
 cp .env.example .env
 
 make export-models
@@ -182,7 +186,7 @@ make client      # run inference after models are READY
 Equivalent manual steps:
 
 ```bash
-uv sync
+uv sync --locked
 cp .env.example .env
 
 # Export YOLO, start Qdrant, initialize vector DB
@@ -207,7 +211,7 @@ Full prerequisites, troubleshooting, and expected output: **[docs/QUICKSTART.md]
 
 ## Configuration
 
-Configuration follows [12-Factor App](https://12factor.net/config) principles via environment variables. Copy `.env.example` to `.env` and adjust as needed.
+Configuration follows [12-Factor App](https://12factor.net/config) principles via environment variables. Copy `.env.example` to `.env` and adjust as needed — host scripts and the Triton container load this file automatically (see [CONFIGURATION.md](docs/CONFIGURATION.md)).
 
 | Variable | Description | Default |
 |----------|-------------|---------|

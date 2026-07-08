@@ -8,7 +8,7 @@ assignees: ''
 
 ## Which Step Failed
 
-- [ ] `uv sync`
+- [ ] `uv sync --locked`
 - [ ] `scripts/export_yolo.py`
 - [ ] `scripts/init_qdrant.py`
 - [ ] `docker compose up --build triton`

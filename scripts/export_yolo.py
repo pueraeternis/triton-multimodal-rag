@@ -3,7 +3,10 @@ import os
 import shutil
 from pathlib import Path
 
+from dotenv import load_dotenv
 from ultralytics import YOLO  # pyright: ignore[reportPrivateImportUsage]
+
+load_dotenv()
 
 MODEL_NAME = os.getenv("YOLO_MODEL_NAME", "yolov8n")
 EXPORT_PATH = Path(

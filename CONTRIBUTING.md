@@ -17,7 +17,7 @@ Thank you for your interest in this project. This is a **reference implementatio
 ```bash
 git clone <repository-url>
 cd triton-multimodal-rag
-uv sync --group dev
+uv sync --locked --group dev
 cp .env.example .env
 ```
 
@@ -95,12 +95,12 @@ No GPU jobs run in CI. GPU smoke testing is maintainer/local responsibility afte
 
 ## Maintainer End-to-End Validation
 
-Before claiming a release or updating **Validated Environment** in README/QUICKSTART, execute the full [QUICKSTART](docs/QUICKSTART.md) workflow from a **clean clone** on consumer-GPU-class hardware:
+Before claiming a release or updating **Validated Platform** in README/QUICKSTART, execute the full [QUICKSTART](docs/QUICKSTART.md) workflow from a **clean clone** on the maintainer validation platform (or document any platform change in `docs/validation/`):
 
 | Step | Action | Pass criterion |
 |------|--------|----------------|
 | 1 | Fresh clone | Clean working tree |
-| 2 | `uv sync` | Completes without error |
+| 2 | `uv sync --locked` | Completes without error |
 | 3 | `make export-models` | `model_repository/yolo_onnx/1/model.onnx` exists |
 | 4 | `make init-qdrant` | Collection created; documents uploaded |
 | 5 | `make up` | Triton container builds and starts |
@@ -112,7 +112,7 @@ Before claiming a release or updating **Validated Environment** in README/QUICKS
 
 ### Evidence collection
 
-During the run, record from `nvidia-smi`, `uv --version`, `uv run python --version`, image tags, and `.env` model IDs. Transfer exact values into README **Validated On** and QUICKSTART **Validated Environment** only after all steps pass.
+During the run, record from `nvidia-smi`, `uv --version`, `uv run python --version`, image tags, and `.env` model IDs. Transfer exact values into README **Validated Platform** and QUICKSTART **Validated Environment** only after all steps pass. Commit a concise record under `docs/validation/`.
 
 Optional pre-check: `make smoke-test MODE=full` before step 7.
 

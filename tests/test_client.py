@@ -30,6 +30,22 @@ def test_load_image_shape():
     assert 0.0 <= img.min() <= img.max() <= 1.0
 
 
+def test_load_dotenv_reads_dotenv_file(tmp_path, monkeypatch):
+    """`.env` values are loaded for host entrypoints via load_dotenv."""
+    env_file = tmp_path / ".env"
+    env_file.write_text('TRITON_URL="dotenv-host:1234"\n', encoding="utf-8")
+
+    monkeypatch.delenv("TRITON_URL", raising=False)
+    monkeypatch.setattr("dotenv.main.find_dotenv", lambda *args, **kwargs: str(env_file))
+
+    import importlib
+
+    import client
+
+    importlib.reload(client)
+    assert client.TRITON_URL == "dotenv-host:1234"
+
+
 def test_inference_input_tensor_spec():
     """Tensor names, dtypes, and shapes expected by bls_orchestrator."""
     query = "test query"

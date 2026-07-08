@@ -12,6 +12,10 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 ROOT = Path(__file__).resolve().parent.parent
 
 REQUIRED_MODELS = ("yolo_onnx", "reranker_py", "llm_vllm", "bls_orchestrator")

@@ -3,8 +3,11 @@ import os
 import shutil
 from pathlib import Path
 
+from dotenv import load_dotenv
 from optimum.onnxruntime import ORTModelForFeatureExtraction  # pyright: ignore[reportMissingImports]
 from transformers import AutoTokenizer
+
+load_dotenv()
 
 MODEL_ID = os.getenv(
     "EMBEDDING_MODEL_ID",

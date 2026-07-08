@@ -2,6 +2,20 @@
 
 Environment variables for the multimodal RAG pipeline. Copy [`.env.example`](../.env.example) to `.env` and adjust as needed.
 
+## How `.env` is loaded
+
+The repository uses a **single configuration file** (`.env`) at the project root. Host-side Python and containerized services read the same file through different mechanisms:
+
+| Consumer | Mechanism |
+|----------|-----------|
+| Host Python (`client.py`, `scripts/*`) | Each entrypoint calls `load_dotenv()` from `python-dotenv` before reading `os.getenv(...)`. `load_dotenv()` discovers `.env` by walking up from the script path (project root for `client.py`; parent directory for scripts under `scripts/`). |
+| Triton container (BLS, reranker) | `env_file: .env` in [`docker-compose.yml`](../docker-compose.yml) injects variables into the container environment at startup. |
+| Docker Compose port mapping | Compose reads `.env` from the project root for `${TRITON_HTTP_PORT}` and similar substitutions |
+
+Host scripts and the Triton container therefore share one `.env` file: Python loads it explicitly at process start; Docker Compose loads it for services defined in `docker-compose.yml`.
+
+`QDRANT_URL` is the one variable that differs by runtime: host scripts default to `http://localhost:6333` in `.env.example`, while `docker-compose.yml` overrides it to `http://qdrant:6333` inside the Triton container. All other variables pass through unchanged.
+
 | Variable | Default | Used by | Description |
 |----------|---------|---------|-------------|
 | `QDRANT_URL` | `http://localhost:6333` | `init_qdrant.py`, BLS | Qdrant HTTP endpoint. Use `http://qdrant:6333` inside the Docker network (set automatically for Triton in `docker-compose.yml`). |
@@ -50,6 +64,6 @@ Exact versions from the maintainer validation run are recorded in [QUICKSTART.md
 
 | Environment | Source of truth |
 |-------------|-----------------|
-| Local client & scripts | `pyproject.toml` + `uv.lock` (`uv sync`) |
+| Local client & scripts | `pyproject.toml` + `uv.lock` (`uv sync --locked`) |
 | Triton container (BLS Python deps) | `infra/config/requirements.txt` (pinned from lockfile) |
 | Triton container (vLLM, numpy) | `Dockerfile` only — constrained by Triton base image |

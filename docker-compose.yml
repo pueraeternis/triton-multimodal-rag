@@ -18,7 +18,10 @@ services:
     container_name: triton-server
     restart: unless-stopped
     shm_size: '16g'
+    env_file:
+      - .env
     environment:
+      # Host scripts use localhost; inside the compose network Qdrant is `qdrant`.
       - QDRANT_URL=http://qdrant:6333
     deploy:
       resources:

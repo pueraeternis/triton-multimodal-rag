@@ -71,7 +71,7 @@ Subsequent starts are typically faster once images and weights are cached locall
 ```bash
 git clone <repository-url>
 cd triton-multimodal-rag
-uv sync
+uv sync --locked
 ```
 
 Or use `make help` after install to see all workflow targets.
@@ -82,7 +82,7 @@ Or use `make help` after install to see all workflow targets.
 cp .env.example .env
 ```
 
-Review `.env` — defaults target Qwen3-4B-Instruct-2507 on a local GPU. Key variables:
+Review `.env` — defaults target Qwen3-4B-Instruct-2507 on a local GPU. Host scripts and the Triton container read this file automatically; only `QDRANT_URL` is overridden inside the Triton container (`http://qdrant:6333`). Key variables:
 
 | Variable | Default | Notes |
 |----------|---------|-------|
@@ -275,7 +275,7 @@ Raw JSON response schema: [OBSERVABILITY.md](OBSERVABILITY.md)
 
 ## Validated Environment
 
-Evidence from maintainer end-to-end validation on **2026-07-02**.
+Evidence from maintainer end-to-end validation on **2026-07-02**. Full engineering record: [validation/plan-02-validation.md](validation/plan-02-validation.md).
 
 ### Validated platform (tested)
 
@@ -296,9 +296,9 @@ Evidence from maintainer end-to-end validation on **2026-07-02**.
 
 ### Expected-compatible platforms (not individually tested)
 
-Consumer GPUs with **16–24 GB VRAM** are expected to work based on the documented VRAM budget for the default Qwen3-4B-Instruct-2507 configuration. Illustrative fits: RTX 3090, RTX 4090, A10, L40S.
+Consumer GPUs with **16–24 GB VRAM** are **expected** to work based on the documented VRAM budget for the default Qwen3-4B-Instruct-2507 configuration. Illustrative fits: RTX 3090, RTX 4090, A10, L40S.
 
-These platforms are **not validated** unless listed in the table above. Match driver and CUDA requirements for your chosen Triton and vLLM versions.
+These platforms are **not validated** unless listed in the table above. Expected compatibility is not the same as the maintainer A100 run. Match driver and CUDA requirements for your chosen Triton and vLLM versions.
 
 ---
 
